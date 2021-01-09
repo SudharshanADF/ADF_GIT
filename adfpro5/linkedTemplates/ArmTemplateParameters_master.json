@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adfpro5"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"BlobSTG_connectionString": {
+			"value": ""
+		},
+		"DBDEV_connectionString": {
+			"value": ""
+		},
+		"STG_DB_connectionString": {
+			"value": ""
+		},
+		"ADLS_G1_properties_typeProperties_dataLakeStoreUri": {
+			"value": "https://datalakeadf.azuredatalakestore.net/webhdfs/v1"
+		},
+		"ADLS_G1_properties_typeProperties_tenant": {
+			"value": "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
+		},
+		"ADLS_G1_properties_typeProperties_subscriptionId": {
+			"value": "42e6655e-1836-49cc-94d8-9049f67e813a"
+		},
+		"ADLS_G1_properties_typeProperties_resourceGroupName": {
+			"value": "ADF"
+		},
+		"AzureBlobStorage_KeyVault_properties_typeProperties_connectionString_secretName": {
+			"value": "AzureBlob"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://adf5blob.dfs.core.windows.net"
+		},
+		"Key Vault_properties_typeProperties_baseUrl": {
+			"value": "https://ADFa5.vault.azure.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

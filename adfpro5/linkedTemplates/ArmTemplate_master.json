@@ -1,0 +1,139 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfpro5"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"BlobSTG_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'BlobSTG'"
+		},
+		"DBDEV_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DBDEV'"
+		},
+		"STG_DB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'STG_DB'"
+		},
+		"ADLS_G1_properties_typeProperties_dataLakeStoreUri": {
+			"type": "string",
+			"defaultValue": "https://datalakeadf.azuredatalakestore.net/webhdfs/v1"
+		},
+		"ADLS_G1_properties_typeProperties_tenant": {
+			"type": "string",
+			"defaultValue": "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
+		},
+		"ADLS_G1_properties_typeProperties_subscriptionId": {
+			"type": "string",
+			"defaultValue": "42e6655e-1836-49cc-94d8-9049f67e813a"
+		},
+		"ADLS_G1_properties_typeProperties_resourceGroupName": {
+			"type": "string",
+			"defaultValue": "ADF"
+		},
+		"AzureBlobStorage_KeyVault_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "AzureBlob"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adf5blob.dfs.core.windows.net"
+		},
+		"Key Vault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://ADFa5.vault.azure.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adfpro5_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureDataLakeStorage1_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					},
+					"BlobSTG_connectionString": {
+						"value": "[parameters('BlobSTG_connectionString')]"
+					},
+					"DBDEV_connectionString": {
+						"value": "[parameters('DBDEV_connectionString')]"
+					},
+					"STG_DB_connectionString": {
+						"value": "[parameters('STG_DB_connectionString')]"
+					},
+					"ADLS_G1_properties_typeProperties_dataLakeStoreUri": {
+						"value": "[parameters('ADLS_G1_properties_typeProperties_dataLakeStoreUri')]"
+					},
+					"ADLS_G1_properties_typeProperties_tenant": {
+						"value": "[parameters('ADLS_G1_properties_typeProperties_tenant')]"
+					},
+					"ADLS_G1_properties_typeProperties_subscriptionId": {
+						"value": "[parameters('ADLS_G1_properties_typeProperties_subscriptionId')]"
+					},
+					"ADLS_G1_properties_typeProperties_resourceGroupName": {
+						"value": "[parameters('ADLS_G1_properties_typeProperties_resourceGroupName')]"
+					},
+					"AzureDataLakeStorage1_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
+					},
+					"Key Vault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('Key Vault_properties_typeProperties_baseUrl')]"
+					},
+					"AzureBlobStorage_KeyVault_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('AzureBlobStorage_KeyVault_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "adfpro5_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adfpro5_ArmTemplate_0')]"
+			]
+		}
+	]
+}

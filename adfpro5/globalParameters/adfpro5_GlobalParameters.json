@@ -1,0 +1,10 @@
+{
+	"SourceDB": {
+		"type": "string",
+		"value": "STG"
+	},
+	"TargetDB": {
+		"type": "string",
+		"value": "DEV"
+	}
+}
