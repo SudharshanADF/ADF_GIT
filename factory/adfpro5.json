@@ -1,0 +1,16 @@
+{
+	"name": "adfpro5",
+	"properties": {
+		"globalParameters": {
+			"SourceDB": {
+				"type": "string",
+				"value": "STG"
+			},
+			"TargetDB": {
+				"type": "string",
+				"value": "DEV"
+			}
+		}
+	},
+	"location": "eastus"
+}

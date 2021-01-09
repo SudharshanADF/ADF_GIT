@@ -1,0 +1,14 @@
+{
+	"name": "ADLS_G1",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDataLakeStore",
+		"typeProperties": {
+			"dataLakeStoreUri": "https://datalakeadf.azuredatalakestore.net/webhdfs/v1",
+			"tenant": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+			"subscriptionId": "42e6655e-1836-49cc-94d8-9049f67e813a",
+			"resourceGroupName": "ADF"
+		}
+	}
+}

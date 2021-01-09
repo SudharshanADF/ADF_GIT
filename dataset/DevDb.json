@@ -1,0 +1,13 @@
+{
+	"name": "DevDb",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DBDEV",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

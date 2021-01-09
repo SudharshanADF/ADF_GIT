@@ -1,0 +1,13 @@
+{
+	"name": "STG_DB",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "STG_DB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

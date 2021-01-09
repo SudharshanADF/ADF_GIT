@@ -1,0 +1,91 @@
+{
+	"name": "ADLS2Blob",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureDataLakeStoreReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ADLS_G1",
+						"type": "DatasetReference",
+						"parameters": {
+							"Directory": {
+								"value": "@pipeline().parameters.Directory",
+								"type": "Expression"
+							},
+							"FileName": {
+								"value": "@pipeline().parameters.FileName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AnyContainer",
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": "dev"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"Directory": {
+				"type": "string",
+				"defaultValue": "ADFSource"
+			},
+			"FileName": {
+				"type": "string",
+				"defaultValue": "Custmer_Details.csv"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-01-07T17:27:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
