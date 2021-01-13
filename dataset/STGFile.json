@@ -12,7 +12,7 @@
 			},
 			"FIleName": {
 				"type": "string",
-				"defaultValue": "CID.csv"
+				"defaultValue": "Pivot.csv"
 			}
 		},
 		"annotations": [],
