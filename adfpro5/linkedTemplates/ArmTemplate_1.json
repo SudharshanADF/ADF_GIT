@@ -6,12 +6,323 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "adfpro5"
+		},
+		"STGKeyVault_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "STGADF"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/STGKeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "Key Vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('STGKeyVault_properties_typeProperties_connectionString_secretName')]",
+						"secretVersion": "ac786e1d4a8c4b0eaac528b7e191baf5"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ADLS2Blob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureDataLakeStoreReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ADLS_G1",
+								"type": "DatasetReference",
+								"parameters": {
+									"Directory": {
+										"value": "@pipeline().parameters.Directory",
+										"type": "Expression"
+									},
+									"FileName": {
+										"value": "@pipeline().parameters.FileName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AnyContainer",
+								"type": "DatasetReference",
+								"parameters": {
+									"Container": "dev"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"Directory": {
+						"type": "string",
+						"defaultValue": "ADFSource"
+					},
+					"FileName": {
+						"type": "string",
+						"defaultValue": "Custmer_Details.csv"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-01-07T17:27:24Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ADLS_G2_To_G1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "stg",
+									"wildcardFileName": "CID.csv",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureDataLakeStoreWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".csv"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ADLS_G2",
+								"type": "DatasetReference",
+								"parameters": {
+									"Container": "stg",
+									"FileName": "CID.csv"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ADLS_G1_Directory",
+								"type": "DatasetReference",
+								"parameters": {
+									"Directory": "ADFSource"
+								}
+							}
+						]
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-08T05:37:03Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/STG_DB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "STGKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/STGKeyVault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Flattern')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "STGFile",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AnyContainer",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DerivedColumn1"
+						},
+						{
+							"name": "Flatten1"
+						}
+					],
+					"script": "parameters{\n\tArray as string[] ([\"SK\",\"YA\",\"SR\"])\n}\nsource(output(\n\t\tCID as short,\n\t\tCustomerName as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource1 derive(Array = $Array) ~> DerivedColumn1\nDerivedColumn1 foldDown(unroll(Array, Array),\n\tmapColumn(\n\t\tCID,\n\t\tCustomerName,\n\t\tArray\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> Flatten1\nFlatten1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Denormalize.txt'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DataFlow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Flattern",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Flattern",
+								"type": "DataFlowReference",
+								"parameters": {
+									"Array": [
+										"SK",
+										"YA",
+										"SR"
+									]
+								},
+								"datasetParameters": {
+									"source1": {
+										"Container": "stg",
+										"FIleName": "CID.csv"
+									},
+									"sink1": {
+										"Container": "dev"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2020-12-30T17:07:12Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Flattern')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/IncrementalLoad')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -292,99 +603,8 @@
 				"annotations": [],
 				"lastPublishTime": "2021-01-06T05:53:15Z"
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Flattern')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "STGFile",
-								"type": "DatasetReference"
-							},
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "AnyContainer",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "DerivedColumn1"
-						},
-						{
-							"name": "Flatten1"
-						}
-					],
-					"script": "parameters{\n\tArray as string[] ([\"SK\",\"YA\",\"SR\"])\n}\nsource(output(\n\t\tCID as short,\n\t\tCustomerName as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource1 derive(Array = $Array) ~> DerivedColumn1\nDerivedColumn1 foldDown(unroll(Array, Array),\n\tmapColumn(\n\t\tCID,\n\t\tCustomerName,\n\t\tArray\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> Flatten1\nFlatten1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Denormalize.txt'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DataFlow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Flattern",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Flattern",
-								"type": "DataFlowReference",
-								"parameters": {
-									"Array": [
-										"SK",
-										"YA",
-										"SR"
-									]
-								},
-								"datasetParameters": {
-									"source1": {
-										"Container": "stg",
-										"FIleName": "CID.csv"
-									},
-									"sink1": {
-										"Container": "dev"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"annotations": [],
-				"lastPublishTime": "2020-12-30T17:07:12Z"
-			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/Flattern')]"
+				"[concat(variables('factoryId'), '/datasets/STG_DB')]"
 			]
 		}
 	]

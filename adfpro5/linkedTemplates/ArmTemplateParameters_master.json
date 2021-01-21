@@ -38,6 +38,18 @@
 		"Key Vault_properties_typeProperties_baseUrl": {
 			"value": "https://ADFa5.vault.azure.net/"
 		},
+		"STGKeyVault_properties_typeProperties_connectionString_secretName": {
+			"value": "STGADF"
+		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "adf5db.database.windows.net"
+		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"value": "kasu"
+		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"value": ""
+		},
 		"containerUri": {
 			"value": ""
 		},

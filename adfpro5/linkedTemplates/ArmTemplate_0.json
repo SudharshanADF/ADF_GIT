@@ -47,6 +47,17 @@
 			"type": "string",
 			"defaultValue": "https://ADFa5.vault.azure.net/"
 		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "adf5db.database.windows.net"
+		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"type": "string",
+			"defaultValue": "kasu"
+		},
+		"SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"type": "secureString"
+		},
 		"AzureBlobStorage_KeyVault_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "AzureBlob"
@@ -58,6 +69,26 @@
 	"resources": [
 		{
 			"name": "[concat(parameters('factoryName'), '/Wait')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Wait_for_Test')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -160,6 +191,77 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SSISAzure')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "East US",
+						"nodeSize": "Standard_D8_v3",
+						"numberOfNodes": 2,
+						"maxParallelExecutionsPerNode": 8
+					},
+					"ssisProperties": {
+						"catalogInfo": {
+							"catalogServerEndpoint": "[parameters('SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
+							"catalogAdminUserName": "[parameters('SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
+							"catalogAdminPassword": {
+								"type": "SecureString",
+								"value": "[parameters('SSISAzure_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
+							},
+							"catalogPricingTier": "S1"
+						},
+						"edition": "Standard",
+						"licenseType": "LicenseIncluded"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SSIS_Package')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute SSIS package1",
+						"type": "ExecuteSSISPackage",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"packageLocation": {
+								"packagePath": "SSIS_Azure/Azure_SSIS/Stg2Dev.dtsx",
+								"type": "SSISDB"
+							},
+							"runtime": "x64",
+							"environmentPath": null,
+							"connectVia": {
+								"referenceName": "SSISAzure",
+								"type": "IntegrationRuntimeReference"
+							},
+							"loggingLevel": "Basic",
+							"projectConnectionManagers": {},
+							"packageConnectionManagers": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SSISAzure')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/StoredProcedure')]",
@@ -508,7 +610,7 @@
 					},
 					"FIleName": {
 						"type": "string",
-						"defaultValue": "CID.csv"
+						"defaultValue": "Pivot.csv"
 					}
 				},
 				"annotations": [],
@@ -537,24 +639,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/STG_DB')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "STG_DB",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/STG_DB')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage_KeyVault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -574,184 +658,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Key Vault')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ADLS2Blob')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureDataLakeStoreReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ADLS_G1",
-								"type": "DatasetReference",
-								"parameters": {
-									"Directory": {
-										"value": "@pipeline().parameters.Directory",
-										"type": "Expression"
-									},
-									"FileName": {
-										"value": "@pipeline().parameters.FileName",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "AnyContainer",
-								"type": "DatasetReference",
-								"parameters": {
-									"Container": "dev"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"Directory": {
-						"type": "string",
-						"defaultValue": "ADFSource"
-					},
-					"FileName": {
-						"type": "string",
-						"defaultValue": "Custmer_Details.csv"
-					}
-				},
-				"annotations": [],
-				"lastPublishTime": "2021-01-07T17:27:24Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ADLS_G1')]",
-				"[concat(variables('factoryId'), '/datasets/AnyContainer')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ADLS_G2_To_G1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "stg",
-									"wildcardFileName": "CID.csv",
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureDataLakeStoreWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".csv"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ADLS_G2",
-								"type": "DatasetReference",
-								"parameters": {
-									"Container": "stg",
-									"FileName": "CID.csv"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ADLS_G1_Directory",
-								"type": "DatasetReference",
-								"parameters": {
-									"Directory": "ADFSource"
-								}
-							}
-						]
-					}
-				],
-				"annotations": [],
-				"lastPublishTime": "2021-01-08T05:37:03Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ADLS_G2')]",
-				"[concat(variables('factoryId'), '/datasets/ADLS_G1_Directory')]"
 			]
 		}
 	]
