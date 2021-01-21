@@ -1,0 +1,18 @@
+{
+	"name": "STGKeyVault",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "Key Vault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "STGADF",
+				"secretVersion": "ac786e1d4a8c4b0eaac528b7e191baf5"
+			}
+		}
+	}
+}
