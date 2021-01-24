@@ -1,0 +1,25 @@
+{
+	"name": "XLSheets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "BlobSTG",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"item": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "XLSheets.xlsx",
+				"container": "stg"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	}
+}
